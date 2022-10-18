@@ -41,15 +41,33 @@ func (s *server) ListShelves(ctx context.Context, in *emptypb.Empty) (*pb.ListSh
 
 // CreateShelf 创建书架 RPC服务
 func (s *server) CreateShelf(ctx context.Context, in *pb.CreateShelfRequest) (*pb.Shelf, error) {
+	sf := &Shelf{
+		ID:    in.GetShelf().GetId(),
+		Theme: in.GetShelf().GetTheme(),
+		Size:  in.GetShelf().GetSize(),
+	}
 
+	Resp, err := s.bs.ShelfCreate(ctx, *sf)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "create shelf failed!")
+	}
+	return &pb.Shelf{Id: Resp.ID, Theme: Resp.Theme, Size: Resp.Size}, nil
 }
 
 // GetShelf 查询书架 RPC服务
 func (s *server) GetShelf(ctx context.Context, in *pb.GetShelfRequest) (*pb.Shelf, error) {
-
+	resp, err := s.bs.ShelfGet(ctx, in.GetShelf())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "select shelf failed!")
+	}
+	return &pb.Shelf{Id: resp.ID, Theme: resp.Theme, Size: resp.Size}, nil
 }
 
 // DeleteShelf 删除书架 RPC服务
 func (s *server) DeleteShelf(ctx context.Context, in *pb.DeleteShelfRequest) (*emptypb.Empty, error) {
-
+	err := s.bs.ShelfDelete(ctx, in.GetShelf())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "delete shelf failed!")
+	}
+	return &emptypb.Empty{}, nil
 }
